@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import axios from 'axios';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 import UserContext from '../contexts/UserContext.js';
@@ -13,33 +13,39 @@ export default function Login() {
         password: "",
     });
     const [message, setMessage] = useState("")
-    const { user, setUser } = useContext(UserContext);
+    const { setUser } = useContext(UserContext);
+    const localUser = JSON.parse(localStorage.getItem("localUser"));
 
     let navigate = useNavigate();
-    
-    if(user.id !== undefined) {
-        if (user.membership !== null) {
-            navigate("/home");
-        } else {
-            navigate("/subscriptions");
-        }
-    }
 
-    function signUp() {
+    useEffect(() => {
+        console.log(localUser);
+        if (localUser.name !== "") {
+            if (localUser.membership !== null) {
+                navigate("/home");
+            } else {
+                navigate("/subscriptions");
+            }
+        }
+    }, []);
+
+    function login() {
         if (credentials.email !== "" && credentials.password !== "") {
             setMessage("")
             const request = axios.post("https://mock-api.driven.com.br/api/v4/driven-plus/auth/login", credentials);
             request.then((res) => {
-                setUser({
+                const newUser = {
                     id: res.data.id,
                     name: res.data.name,
                     cpf: res.data.cpf,
                     email: res.data.email,
                     password: res.data.password,
-                    membership: res.data.membership
-                });
-                localStorage.setItem("localUser", JSON.stringify(user));
-                if (res.data.membership !== null) {
+                    membership: res.data.membership,
+                    token: res.data.token
+                }
+                setUser(newUser);
+                localStorage.setItem("localUser", JSON.stringify(newUser));
+                if (newUser.membership !== null) {
                     navigate("/home");
                 } else {
                     navigate("/subscriptions");
@@ -59,7 +65,7 @@ export default function Login() {
                     default:
                         setMessage("Verifique os dados e tente novamente!");
                 }
-            })
+            });
         } else {
             setMessage("Preencha os dados corretamente!");
         }
@@ -70,7 +76,7 @@ export default function Login() {
             <Logo src={logo} alt="logo" />
             <Input type="text" placeholder="E-mail" value={credentials.email} onChange={(e) => setCredentials({...credentials, email: e.target.value})} />
             <Input type="password" placeholder="Senha" value={credentials.password} onChange={(e) => setCredentials({...credentials, password: e.target.value})} />
-            <LoginButton onClick={signUp}> ENTRAR </LoginButton>
+            <LoginButton onClick={login}> ENTRAR </LoginButton>
             <StyledLink to="/sign-up">
                 <Register> Não possui uma conta? Cadastre-se </Register>
             </StyledLink>
@@ -149,7 +155,7 @@ const Warn = styled.p`
     justify-content: center;
     text-align: center;
     display: ${props => props.display};
-`
+`;
 
 const StyledLink = styled(Link)`
     text-decoration: none;

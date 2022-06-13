@@ -15,26 +15,15 @@ import UserContext from './contexts/UserContext.js';
 import './assets/css/reset.css';
 
 function App() {
-    const localUser = JSON.parse(localStorage.getItem("localUser"));
     const [user, setUser] = useState({
         id: undefined,
         name: "",
         cpf: "",
         email: "",
         password: "",
-        membership: null
+        membership: null,
+        token: ""
     })
-
-    if (localUser !== null) {
-        setUser({
-            id: localUser.id,
-            name: localUser.name,
-            cpf: localUser.cpf,
-            email: localUser.email,
-            password: localUser.password,
-            membership: localUser.membership
-        });
-    }
 
     return (
         <BrowserRouter>
